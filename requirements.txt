@@ -1,0 +1,12 @@
+# Dependencias principales
+PySide6
+SQLAlchemy
+mysql-connector-python
+python-dotenv
+
+# Dependencias opcionales (funcionalidades extra)
+# pandas + openpyxl -> exportar a .xlsx
+pandas
+openpyxl
+# reportlab -> exportar a PDF
+reportlab

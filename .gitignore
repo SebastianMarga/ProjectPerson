@@ -1,0 +1,22 @@
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore __init__ if you specifically want (unusual but requested)
+__init__.py
+
+# Environment files
+.env
+
+# Editor/IDE
+.vscode/
+.idea/
+
+# build/dist
+build/
+dist/
+*.egg-info/
