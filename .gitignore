@@ -20,3 +20,5 @@ __init__.py
 build/
 dist/
 *.egg-info/
+
+main.spec

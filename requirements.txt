@@ -10,3 +10,6 @@ pandas
 openpyxl
 # reportlab -> exportar a PDF
 reportlab
+
+# Migraciones de esquema
+alembic

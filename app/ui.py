@@ -53,6 +53,7 @@ class ProductDialog(QDialog):
         layout = QFormLayout(self)
 
         self.name_edit = QLineEdit()
+        self.tipo_edit = QLineEdit()
         self.desc_edit = QLineEdit()
         self.cant_spin = QSpinBox()
         self.cant_spin.setRange(0, 1000000)
@@ -62,6 +63,7 @@ class ProductDialog(QDialog):
         self.date_edit.setDisplayFormat("yyyy-MM-dd")
 
         layout.addRow("Nombre:", self.name_edit)
+        layout.addRow("Tipo:", self.tipo_edit)
         layout.addRow("Descripción:", self.desc_edit)
         layout.addRow("Cantidad:", self.cant_spin)
         layout.addRow("Marca:", self.marca_edit)
@@ -76,6 +78,7 @@ class ProductDialog(QDialog):
         # Cargar datos si se proporciona un producto
         if product:
             self.name_edit.setText(product.name or "")
+            self.tipo_edit.setText(product.tipo or "")
             self.desc_edit.setText(product.descripcion or "")
             self.cant_spin.setValue(product.cantidad or 0)
             self.marca_edit.setText(product.Marca or "")
@@ -90,6 +93,7 @@ class ProductDialog(QDialog):
         qd = self.date_edit.date()
         return {
             "name": self.name_edit.text().strip(),
+            "tipo": self.tipo_edit.text().strip(),
             "descripcion": self.desc_edit.text().strip(),
             "cantidad": self.cant_spin.value(),
             "Marca": self.marca_edit.text().strip(),
@@ -108,8 +112,9 @@ class MainWindow(QMainWindow):
         vbox = QVBoxLayout(central)
 
         # Tabla
-        self.table = QTableWidget(0, 7)
-        self.table.setHorizontalHeaderLabels(["ID", "Nombre", "Descripción", "Cantidad", "Marca", "Fecha Vencimiento", "Fecha Registro"])
+        # ahora con columna 'Tipo'
+        self.table = QTableWidget(0, 8)
+        self.table.setHorizontalHeaderLabels(["ID", "Nombre", "Tipo", "Descripción", "Cantidad", "Marca", "Fecha Vencimiento", "Fecha Registro"]) 
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         vbox.addWidget(self.table)
@@ -151,11 +156,12 @@ class MainWindow(QMainWindow):
             self.table.insertRow(row)
             self.table.setItem(row, 0, QTableWidgetItem(str(p.id)))
             self.table.setItem(row, 1, QTableWidgetItem(p.name or ""))
-            self.table.setItem(row, 2, QTableWidgetItem(p.descripcion or ""))
-            self.table.setItem(row, 3, QTableWidgetItem(str(p.cantidad)))
-            self.table.setItem(row, 4, QTableWidgetItem(p.Marca or ""))
-            self.table.setItem(row, 5, QTableWidgetItem(p.Fecha_Vencimiento.isoformat() if p.Fecha_Vencimiento else ""))
-            self.table.setItem(row, 6, QTableWidgetItem(p.Fecha_Registro.isoformat() if p.Fecha_Registro else ""))
+            self.table.setItem(row, 2, QTableWidgetItem(p.tipo or ""))
+            self.table.setItem(row, 3, QTableWidgetItem(p.descripcion or ""))
+            self.table.setItem(row, 4, QTableWidgetItem(str(p.cantidad)))
+            self.table.setItem(row, 5, QTableWidgetItem(p.Marca or ""))
+            self.table.setItem(row, 6, QTableWidgetItem(p.Fecha_Vencimiento.isoformat() if p.Fecha_Vencimiento else ""))
+            self.table.setItem(row, 7, QTableWidgetItem(p.Fecha_Registro.isoformat() if p.Fecha_Registro else ""))
 
         self.table.resizeColumnsToContents()
 # Obtener ID del producto seleccionado
@@ -204,13 +210,14 @@ class MainWindow(QMainWindow):
                 data.append({
                     'id': p.id,
                     'name': p.name or '',
+                    'tipo': p.tipo or '',
                     'descripcion': p.descripcion or '',
                     'cantidad': p.cantidad,
                     'Marca': p.Marca or '',
                     'Fecha_Vencimiento': p.Fecha_Vencimiento.isoformat() if p.Fecha_Vencimiento else '',
                     'Fecha_Registro': p.Fecha_Registro.isoformat() if p.Fecha_Registro else ''
                 })
-            fieldnames = ['id','name','descripcion','cantidad','Marca','Fecha_Vencimiento','Fecha_Registro']
+            fieldnames = ['id','name','tipo','descripcion','cantidad','Marca','Fecha_Vencimiento','Fecha_Registro']
 
             # Pedir formato
             dlg = QMessageBox(self)

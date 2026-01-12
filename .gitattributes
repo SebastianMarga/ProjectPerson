@@ -1,0 +1,16 @@
+# .gitattributes - normalize line endings to LF
+# Treat all files as text when possible and enforce LF endings in the repo
+* text=auto eol=lf
+
+# Ensure Python and shell scripts use LF
+*.py text eol=lf
+*.sh text eol=lf
+
+# Mark common binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.exe binary
+*.dll binary

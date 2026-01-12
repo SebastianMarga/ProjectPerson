@@ -14,11 +14,15 @@ except ModuleNotFoundError:
         raise
 
 # Insertar productos
-def insert_product(session, name, descripcion=None, cantidad=0, Marca=None, Fecha_Vencimiento=None):
+def insert_product(session, name, tipo, descripcion=None, cantidad=0, Marca=None, Fecha_Vencimiento=None):
+    """Insert a product. `tipo` is required."""
+    if tipo is None or str(tipo).strip() == "":
+        raise ValueError("El campo 'tipo' es obligatorio")
     if isinstance(Fecha_Vencimiento, str):
         Fecha_Vencimiento = date.fromisoformat(Fecha_Vencimiento)
     prod = Product(
         name=name,
+        tipo=tipo,
         descripcion=descripcion,
         cantidad=cantidad,
         Marca=Marca,
