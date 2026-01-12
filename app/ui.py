@@ -63,7 +63,11 @@ def load_tipo_options():
             if opts:
                 return opts
     # Fallback por defecto
-    return ["General","Electrónica","Ropa","Alimentos"]
+    return ["Bebida", "Condimento", "Enlatados", "Galletas", "Piqueos", "Limpieza",
+"Utiles", "Aseo personal", "Bebida alcoholica", "Lacteos", "Fideos", "Salsas",
+"Dulces", "Reposteria", "Detergentes", "Helados", "Descartables", "Cuadernos",
+"Cocina", "Velas", "Medicina", "Otros"
+]
 
 try:
     from app.repository import list_products, insert_product_safe, update_product_safe, delete_product
