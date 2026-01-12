@@ -1,3 +1,14 @@
+"""Helpers de inicialización de la base de datos.
+
+Este módulo realiza dos responsabilidades:
+- Asegurar que la base de datos MySQL existe (mediante `ensure_database()`).
+- Crear el Engine de SQLAlchemy (`engine`) y el generador de sesiones `SessionLocal`.
+
+Notas importantes:
+- Para la evolución del esquema, prefiera migraciones con Alembic en lugar de `Base.metadata.create_all()`; este último es útil solo para pruebas locales.
+- `DATABASE_URL` se lee desde el entorno; cámbiela allí o en su archivo `.env`.
+"""
+
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine import make_url
@@ -64,9 +75,10 @@ except Exception:
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 # Crear tablas (solo crea si no existen)
+# NOTA: Esto es conveniente en desarrollo; en producción use Alembic para migraciones
 Base.metadata.create_all(bind=engine)
 
-# Comprobación rápida de tablas
+# Comprobación rápida de tablas (útil para debugging)
 insp = inspect(engine)
 print("Tablas en la BD:", insp.get_table_names())
 

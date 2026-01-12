@@ -1,0 +1,22 @@
+Bebida
+Condimento
+Enlatados
+Galletas
+Piqueos
+Limpieza
+Utiles
+Aseo personal
+Bebida alcoholica
+Lacteos
+Fideos
+Salsas
+Dulces
+Reposteria
+Detergentes
+Helados
+Descartables
+Cuaderos
+Cocina
+Velas
+Mediciina
+Otros

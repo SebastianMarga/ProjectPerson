@@ -13,3 +13,8 @@ reportlab
 
 # Migraciones de esquema
 alembic
+
+# Si quieres desplegar la aplicacion como ejecutable
+pyinstaller 
+
+#Si quieres configurar las opciones del tipo modifica en la carpeta config

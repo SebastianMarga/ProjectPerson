@@ -32,6 +32,8 @@ from app.models import Base
 target_metadata = Base.metadata
 
 # allow DATABASE_URL from environment
+# Nota: Puede cargar DATABASE_URL desde .env (env var) o desde app.db. Al usar Alembic en CI/producción
+# asegúrate de que la variable de entorno esté definida antes de ejecutar comandos como `alembic upgrade head`.
 if not config.get_main_option("sqlalchemy.url"):
     db_url = os.getenv("DATABASE_URL")
     if not db_url:
@@ -44,8 +46,7 @@ if not config.get_main_option("sqlalchemy.url"):
     if db_url:
         config.set_main_option("sqlalchemy.url", db_url)
 
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
+# Otros valores del config, definidos por las necesidades de env.py, pueden obtenerse aquí:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 

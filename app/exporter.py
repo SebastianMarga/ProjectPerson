@@ -6,7 +6,10 @@ Functions:
 - export_pdf(path, data, fieldnames)
 - MissingDependencyError
 
-Each function raises MissingDependencyError when a required library is not installed, and raises a RuntimeError for other failures.
+Notas:
+- `fieldnames` define el orden de las columnas en CSV/XLSX/PDF; manténgalo consistente con la UI.
+- Las funciones lanzan `MissingDependencyError` cuando faltan librerías opcionales y
+  `ExportError` para otros fallos (de modo que la UI pueda decidir volver a CSV, etc.).
 """
 from typing import List, Dict
 import csv

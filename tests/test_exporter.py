@@ -4,10 +4,10 @@ import pytest
 from app.exporter import export_csv, export_xlsx, export_pdf, MissingDependencyError
 
 SAMPLE_DATA = [
-    {'id': 1, 'name': 'Producto A', 'tipo': 'Tipo1', 'descripcion': 'Desc', 'cantidad': 10, 'Marca': 'M', 'Fecha_Vencimiento': '2026-01-01', 'Fecha_Registro': '2026-01-01'},
-    {'id': 2, 'name': 'Producto B', 'tipo': 'Tipo2', 'descripcion': 'Desc2', 'cantidad': 5, 'Marca': 'M2', 'Fecha_Vencimiento': '2026-02-01', 'Fecha_Registro': '2026-02-02'},
+    {'id': 1, 'name': 'Producto A', 'tipo': 'Tipo1', 'descripcion': 'Desc', 'cantidad': 10, 'Marca': 'M', 'precio': 9.99, 'Fecha_Vencimiento': '2026-01-01', 'Fecha_Registro': '2026-01-01'},
+    {'id': 2, 'name': 'Producto B', 'tipo': 'Tipo2', 'descripcion': 'Desc2', 'cantidad': 5, 'Marca': 'M2', 'precio': 19.50, 'Fecha_Vencimiento': '2026-02-01', 'Fecha_Registro': '2026-02-02'},
 ]
-FIELDNAMES = ['id','name','tipo','descripcion','cantidad','Marca','Fecha_Vencimiento','Fecha_Registro']
+FIELDNAMES = ['id','name','tipo','descripcion','cantidad','Marca','precio','Fecha_Vencimiento','Fecha_Registro']
 
 
 def test_export_csv(tmp_path):

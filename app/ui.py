@@ -1,10 +1,19 @@
+"""Interfaz gráfica con PySide6 para el sistema de inventario.
+
+Contiene `MainWindow` y `ProductDialog`. Este módulo tiene ligeras dependencias
+opcionales (pandas/openpyxl/reportlab) sólo necesarias para exportar.
+- La lista de tipos puede cargarse desde `config/tipos.txt` (archivo plano).
+- Evitar operaciones de larga duración en el hilo principal (UI) y moverlas a un hilo/worker.
+"""
+
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem,
     QPushButton, QDialog, QFormLayout, QLineEdit, QSpinBox, QDateEdit, QMessageBox, QApplication,
-    QAbstractItemView, QDialogButtonBox, QFileDialog, QInputDialog
+    QAbstractItemView, QDialogButtonBox, QFileDialog, QInputDialog, QComboBox, QDoubleSpinBox
 )
 from PySide6.QtCore import Qt, QDate
 from datetime import date
+from pathlib import Path
 import traceback
 
 # Uso opcional de pandas para exportar a .xlsx; si no está, crearemos a CSV
@@ -30,6 +39,32 @@ try:
     HAS_REPORTLAB = True
 except Exception:
     HAS_REPORTLAB = False
+
+
+def load_tipo_options():
+    """Carga opciones de tipos desde 'config/tipos.txt' (project root) o 'resources/tipos.txt'.
+    Devuelve lista de opciones; si el archivo no existe retorna una lista por defecto.
+    Cada entrada asegura que comienza con mayúscula."""
+    root = Path(__file__).resolve().parent.parent
+    candidates = [root / 'config' / 'tipos.txt', root / 'resources' / 'tipos.txt']
+    for p in candidates:
+        if p.exists():
+            opts = []
+            try:
+                text = p.read_text(encoding='utf-8')
+            except Exception:
+                continue
+            for line in text.splitlines():
+                s = line.strip()
+                if not s:
+                    continue
+                s = s[0].upper() + s[1:] if s else s
+                opts.append(s)
+            if opts:
+                return opts
+    # Fallback por defecto
+    return ["General","Electrónica","Ropa","Alimentos"]
+
 try:
     from app.repository import list_products, insert_product_safe, update_product_safe, delete_product
     from app.exporter import export_csv, export_xlsx, export_pdf, export_to, MissingDependencyError, ExportError
@@ -53,11 +88,21 @@ class ProductDialog(QDialog):
         layout = QFormLayout(self)
 
         self.name_edit = QLineEdit()
-        self.tipo_edit = QLineEdit()
+        self.tipo_edit = QComboBox()
+        # Cargar opciones desde archivo o usar valores por defecto
+        try:
+            tipo_opts = load_tipo_options()
+        except Exception:
+            tipo_opts = ["General","Electrónica","Ropa","Alimentos"]
+        self.tipo_edit.addItems(tipo_opts)
         self.desc_edit = QLineEdit()
         self.cant_spin = QSpinBox()
         self.cant_spin.setRange(0, 1000000)
         self.marca_edit = QLineEdit()
+        self.precio_spin = QDoubleSpinBox()
+        self.precio_spin.setRange(0, 1000000)
+        self.precio_spin.setDecimals(2)
+        self.precio_spin.setPrefix("$")
         self.date_edit = QDateEdit()
         self.date_edit.setCalendarPopup(True)
         self.date_edit.setDisplayFormat("yyyy-MM-dd")
@@ -67,6 +112,7 @@ class ProductDialog(QDialog):
         layout.addRow("Descripción:", self.desc_edit)
         layout.addRow("Cantidad:", self.cant_spin)
         layout.addRow("Marca:", self.marca_edit)
+        layout.addRow("Precio:", self.precio_spin)
         layout.addRow("Fecha Vencimiento:", self.date_edit)
 
         # Botones OK / Cancelar
@@ -78,10 +124,18 @@ class ProductDialog(QDialog):
         # Cargar datos si se proporciona un producto
         if product:
             self.name_edit.setText(product.name or "")
-            self.tipo_edit.setText(product.tipo or "")
+            # seleccionar tipo en combo
+            if product.tipo:
+                idx = self.tipo_edit.findText(product.tipo)
+                if idx >= 0:
+                    self.tipo_edit.setCurrentIndex(idx)
+                else:
+                    self.tipo_edit.addItem(product.tipo)
+                    self.tipo_edit.setCurrentIndex(self.tipo_edit.count()-1)
             self.desc_edit.setText(product.descripcion or "")
             self.cant_spin.setValue(product.cantidad or 0)
             self.marca_edit.setText(product.Marca or "")
+            self.precio_spin.setValue(float(product.precio) if getattr(product, 'precio', None) is not None else 0.0)
             if product.Fecha_Vencimiento:
                 self.date_edit.setDate(QDate(product.Fecha_Vencimiento.year, product.Fecha_Vencimiento.month, product.Fecha_Vencimiento.day))
             else:
@@ -93,10 +147,11 @@ class ProductDialog(QDialog):
         qd = self.date_edit.date()
         return {
             "name": self.name_edit.text().strip(),
-            "tipo": self.tipo_edit.text().strip(),
+            "tipo": self.tipo_edit.currentText().strip(),
             "descripcion": self.desc_edit.text().strip(),
             "cantidad": self.cant_spin.value(),
             "Marca": self.marca_edit.text().strip(),
+            "precio": float(self.precio_spin.value()),
             "Fecha_Vencimiento": date(qd.year(), qd.month(), qd.day())
         }
 
@@ -104,7 +159,7 @@ class ProductDialog(QDialog):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Inventario - Mini")
+        self.setWindowTitle("Sistema-Inventario-Guadalupe")
         self.resize(800, 400)
 
         central = QWidget()
@@ -112,9 +167,9 @@ class MainWindow(QMainWindow):
         vbox = QVBoxLayout(central)
 
         # Tabla
-        # ahora con columna 'Tipo'
-        self.table = QTableWidget(0, 8)
-        self.table.setHorizontalHeaderLabels(["ID", "Nombre", "Tipo", "Descripción", "Cantidad", "Marca", "Fecha Vencimiento", "Fecha Registro"]) 
+        # ahora con columna 'Tipo' y 'Precio'
+        self.table = QTableWidget(0, 9)
+        self.table.setHorizontalHeaderLabels(["ID", "Nombre", "Tipo", "Descripción", "Cantidad", "Marca", "Precio", "Fecha Vencimiento", "Fecha Registro"]) 
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         vbox.addWidget(self.table)
@@ -160,8 +215,9 @@ class MainWindow(QMainWindow):
             self.table.setItem(row, 3, QTableWidgetItem(p.descripcion or ""))
             self.table.setItem(row, 4, QTableWidgetItem(str(p.cantidad)))
             self.table.setItem(row, 5, QTableWidgetItem(p.Marca or ""))
-            self.table.setItem(row, 6, QTableWidgetItem(p.Fecha_Vencimiento.isoformat() if p.Fecha_Vencimiento else ""))
-            self.table.setItem(row, 7, QTableWidgetItem(p.Fecha_Registro.isoformat() if p.Fecha_Registro else ""))
+            self.table.setItem(row, 6, QTableWidgetItem(f"{getattr(p, 'precio', 0.0):.2f}"))
+            self.table.setItem(row, 7, QTableWidgetItem(p.Fecha_Vencimiento.isoformat() if p.Fecha_Vencimiento else ""))
+            self.table.setItem(row, 8, QTableWidgetItem(p.Fecha_Registro.isoformat() if p.Fecha_Registro else ""))
 
         self.table.resizeColumnsToContents()
 # Obtener ID del producto seleccionado
@@ -214,10 +270,11 @@ class MainWindow(QMainWindow):
                     'descripcion': p.descripcion or '',
                     'cantidad': p.cantidad,
                     'Marca': p.Marca or '',
+                    'precio': float(getattr(p, 'precio', 0.0)),
                     'Fecha_Vencimiento': p.Fecha_Vencimiento.isoformat() if p.Fecha_Vencimiento else '',
                     'Fecha_Registro': p.Fecha_Registro.isoformat() if p.Fecha_Registro else ''
                 })
-            fieldnames = ['id','name','tipo','descripcion','cantidad','Marca','Fecha_Vencimiento','Fecha_Registro']
+            fieldnames = ['id','name','tipo','descripcion','cantidad','Marca','precio','Fecha_Vencimiento','Fecha_Registro']
 
             # Pedir formato
             dlg = QMessageBox(self)

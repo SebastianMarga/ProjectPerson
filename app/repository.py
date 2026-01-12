@@ -1,3 +1,9 @@
+"""Repository: funciones de acceso a datos (CRUD) sobre `Product`.
+
+Esta capa encapsula sesiones y transacciones. Use las funciones `*_safe` cuando quiera que
+el wrapper maneje la apertura/cierre de sesiones automáticamente.
+"""
+
 from datetime import date
 from sqlalchemy.exc import IntegrityError
 import traceback
@@ -14,18 +20,27 @@ except ModuleNotFoundError:
         raise
 
 # Insertar productos
-def insert_product(session, name, tipo, descripcion=None, cantidad=0, Marca=None, Fecha_Vencimiento=None):
-    """Insert a product. `tipo` is required."""
+def insert_product(session, name, tipo, descripcion=None, cantidad=0, Marca=None, Fecha_Vencimiento=None, precio=0.0):
+    """Insert a product. `tipo` is required. `precio` is a numeric value (default 0.0)."""
+    # Validación sencilla del campo 'tipo'
     if tipo is None or str(tipo).strip() == "":
         raise ValueError("El campo 'tipo' es obligatorio")
+    # Aceptamos fechas en formato ISO (str) o `datetime.date` y las normalizamos
     if isinstance(Fecha_Vencimiento, str):
         Fecha_Vencimiento = date.fromisoformat(Fecha_Vencimiento)
+    # normalizar precio
+    try:
+        precio = float(precio)
+    except Exception:
+        precio = 0.0
+    # Nota: la llamada a session.commit() sigue el patrón explícito; en caso de error se realiza rollback
     prod = Product(
         name=name,
         tipo=tipo,
         descripcion=descripcion,
         cantidad=cantidad,
         Marca=Marca,
+        precio=precio,
         Fecha_Vencimiento=Fecha_Vencimiento
     )
     try:
@@ -62,12 +77,23 @@ def list_products(session=None):
 
 # Editar producto
 def update_product(session, product_id, **fields):
+    """Update a product by id.
+
+    `fields` can include any attribute present on the model. Only attributes that
+    exist on the mapped `Product` are set; this prevents accidental creation of new attributes.
+    """
     prod = session.get(Product, product_id)
     if not prod:
         return None
     if 'Fecha_Vencimiento' in fields and isinstance(fields['Fecha_Vencimiento'], str):
         fields['Fecha_Vencimiento'] = date.fromisoformat(fields['Fecha_Vencimiento'])
+    if 'precio' in fields:
+        try:
+            fields['precio'] = float(fields['precio'])
+        except Exception:
+            fields['precio'] = prod.precio or 0.0
     for k, v in fields.items():
+        # Solo asignar si existe el atributo en el modelo
         if hasattr(prod, k):
             setattr(prod, k, v)
     try:

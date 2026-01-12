@@ -4,6 +4,8 @@ Revision ID: df0c6c1e8cd1
 Revises: 
 Create Date: 2026-01-11 23:19:22.564785
 
+Nota: evite editar este archivo después de que se haya aplicado en otros entornos; prefiera
+crear migraciones de avance para mantener el historial consistente entre entornos.
 """
 from typing import Sequence, Union
 
